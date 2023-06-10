@@ -7,16 +7,39 @@
 
 import Foundation
 
-struct Zone: Codable {
-    var id: Int
-    var name: String
-    var image: String
+struct Zone: Codable, Identifiable {
+    let id: String
+    let image: String
+    let isEnabled: Bool
+    let isActive: Bool
+    let name: String
+    let devices: [Device]
+    let volumeBar: VolumeBar
+    let floor: String
+    let space: String
+
+    enum CodingKeys: String, CodingKey {
+        case id = "_id"
+        case image, isEnabled, isActive, name, devices, volumeBar, floor, space
+    }
+}
+
+struct Device: Codable {
+    let id: String
+    let isEnabled: Bool
+    let isActive: Bool
+    let isVisible: Bool
+    let name: String
     
-    static func parseZones(from jsonObject: Any) -> [Zone]? {
-            guard let jsonData = try? JSONSerialization.data(withJSONObject: jsonObject, options: []) else {
-                return nil
-            }
-            let decoder = JSONDecoder()
-            return try? decoder.decode([Zone].self, from: jsonData)
-        }
+    enum CodingKeys: String, CodingKey {
+        case id = "_id"
+        case isEnabled, isActive, name, isVisible
+    }
+}
+
+struct VolumeBar: Codable {
+    let mute: Bool
+    let template: Int
+    let visible: Bool
+    let volume: Int
 }

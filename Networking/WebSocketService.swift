@@ -34,28 +34,32 @@ class WebSocketService: ObservableObject {
             
         }
         
-//        socket.on("/auth/register") { [weak self] data, ack in
-//            print("Registered with server")
-//            self?.isRegistered = true
-//        }
+        socket.on("registration") { [weak self] data, ack in
+            print("Registered with server")
+            self?.isRegistered = true
+            //self?.sendDataToServer(eventName: "/api/v1/zones", data: [:])
+            self?.socket.emit("getZones", [] as [Any])
+        }
         
-        socket.on("get_zones") { [weak self] data, ack in
-            print("Received list of zones")
-            self?.hasLoadedZones = true
+        socket.on("updateUI") { [weak self] data, ack in
+            print("Received UI update! \(data)")
+            
+            //self?.hasLoadedZones = true
             // Process the list of zones here
+            // Преобразуйте полученные данные
+                if let jsonString = data.first as? String,
+                   let jsonData = jsonString.data(using: .utf8) {
+                    do {
+                        let decoder = JSONDecoder()
+                        let zones = try decoder.decode([Zone].self, from: jsonData)
+                        // передать zones в интерфейс
+                        AppState.shared.zones = zones
+                    } catch {
+                        print("Ошибка декодирования: \(error.localizedDescription)")
+                    }
+                }
         }
         
-        // Обработка любых событий, которые ваш сервер будет отправлять
-        socket.on("event_from_server") { (data, _) in
-            print("Received data:", data)
-//            if let receivedData = data[0] as? [String: Any],
-//               let jsonData = try? JSONSerialization.data(withJSONObject: receivedData, options: []) {
-//                // Работайте с полученными данными
-//                self.onMessageReceived(data: jsonData)
-//            }
-        }
-
-        //socket.connect()
         connect{_ in}
     }
 
