@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 
 struct SourcesScreen: View {
+    @ObservedObject var appState = AppState.shared
     @State private var sources: [Source] = []
     @State private var showAlert = false
 
@@ -28,23 +29,24 @@ struct SourcesScreen: View {
     }
 
     func loadSources() {
-        APIClient.getSources { result in
-            switch result {
-            case .success(let sources):
-                self.updateSources(sources: sources)
-            case .failure(let error):
-                // обработайте ошибку здесь, например, отобразите сообщение об ошибке
-                print("Error: \(error.localizedDescription)")
-                self.showAlert = true
-            }
-        }
+        self.updateSources(sources: sources)
+//        APIClient.getSources { result in
+//            switch result {
+//            case .success(let sources):
+//                self.updateSources(sources: sources)
+//            case .failure(let error):
+//                // обработайте ошибку здесь, например, отобразите сообщение об ошибке
+//                print("Error: \(error.localizedDescription)")
+//                self.showAlert = true
+//            }
+//        }
     }
 }
 
 extension SourcesScreen {
     func updateSources(sources: [Source]) {
         DispatchQueue.main.async {
-            self.sources = sources
+            appState.sources = sources
         }
     }
 }

@@ -20,6 +20,10 @@ class AppState: ObservableObject {
     private init() {
         webSocketService = WebSocketService.shared
     }
+    
+    func updateZones() {
+        webSocketService.sendDataToServer(eventName: "getZones")
+    }
 }
 /**
  Когда вы создадите экран с сохранением выбранной зоны и источника, вы можете использовать менять `currentZoneId` и `currentSourceId` следующим образом:

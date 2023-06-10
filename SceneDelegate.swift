@@ -18,8 +18,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Создать экземпляр AppState
         let appState = AppState.shared
 
-        
-
         // Создать представление ContentView и установить AppState в качестве входного параметра
         let contentView = ContentView().environmentObject(appState)
 

@@ -42,17 +42,16 @@ class WebSocketService: ObservableObject {
         }
         
         socket.on("updateUI") { [weak self] data, ack in
-            print("Received UI update! \(data)")
+            print("Received UI update!")
             
-            //self?.hasLoadedZones = true
             // Process the list of zones here
-            // Преобразуйте полученные данные
                 if let jsonString = data.first as? String,
                    let jsonData = jsonString.data(using: .utf8) {
                     do {
                         let decoder = JSONDecoder()
                         let zones = try decoder.decode([Zone].self, from: jsonData)
                         // передать zones в интерфейс
+                        self?.hasLoadedZones = true
                         AppState.shared.zones = zones
                     } catch {
                         print("Ошибка декодирования: \(error.localizedDescription)")
@@ -63,37 +62,9 @@ class WebSocketService: ObservableObject {
         connect{_ in}
     }
 
-    func sendDataToServer(eventName: String, data: [String: Any]) {
+    func sendDataToServer(eventName: String, data: [String: Any] = [:]) {
         print("sendDataToServer: \(data)")
-        socket.emit(eventName, data)
-    }
-
-    func onMessageReceived(data: Data) {
-        do {
-            // Декодирование данных в модель WebSocketMessage
-            let message = try JSONDecoder().decode(WebSocketMessage.self, from: data)
-
-            // Проверка сообщений от сервера и вызов соответствующих функций для обновления компонентов пользовательского интерфейса
-            if let messageType = message.type, let messageData = message.data {
-                switch messageType {
-                case "zones":
-                    let zones = try JSONDecoder().decode([Zone].self, from: messageData)
-                    // Вызов функции обновления списка зон
-                    AppState.shared.zones = zones
-                case "sources":
-                    let sources = try JSONDecoder().decode([Source].self, from: messageData)
-                    // Вызов функции обновления списка источников
-                    AppState.shared.sources = sources
-                // Добавьте обработку других сообщений от сервера здесь...
-                default:
-                    print("Unknown message type: \(messageType)")
-                }
-            } else {
-                print("Type or data missing in the message")
-            }
-        } catch {
-            print("Error decoding the WebSocket message: \(error)")
-        }
+        socket.emit(eventName, [data])
     }
 
     func disconnect() {
@@ -121,17 +92,13 @@ class WebSocketService: ObservableObject {
         socket.connect()
     }
 
-    // Добавьте функцию авторизации:
     func authenticate(completion: @escaping (Result<Void, Error>) -> Void) {
-        // Замените "/auth/register" на соответствующее событие сервера
-        socket.on("/auth/register") { (data, _) in
-            // Вызовите completion(.success(())), если сервер сообщает об успешной авторизации
+        socket.on("registration") { (data, _) in
             completion(.success(()))
             self.isRegistered = true
         }
         
-        // Замените "authentication_error" на соответствующее событие сервера
-        socket.on("authentication_error") { (data, _) in
+        socket.on("registration_error") { (data, _) in
             if let error = data[0] as? Error {
                 completion(.failure(error))
             }

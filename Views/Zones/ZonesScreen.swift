@@ -27,16 +27,16 @@ struct ZonesScreen: View {
     }
 
     func loadZones() {
-        APIClient.getZones { result in
-            switch result {
-            case .success(let zones):
-                self.updateZones(zones: zones)
-            case .failure(let error):
-                // обработайте ошибку здесь, например, отобразите сообщение об ошибке
-                print("Error: \(error.localizedDescription)")
-                self.showAlert = true
-            }
-        }
+//        appState.updateZones() { result in
+//            switch result {
+//            case .success(let zones):
+//                self.updateZones(zones: zones)
+//            case .failure(let error):
+//                // обработайте ошибку здесь, например, отобразите сообщение об ошибке
+//                print("Error: \(error.localizedDescription)")
+//                self.showAlert = true
+//            }
+//        }
     }
 }
 
