@@ -12,13 +12,13 @@ import SwiftUI
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
-
+    let webSocketService = WebSocketService.shared
+    
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Создать экземпляр AppState
         let appState = AppState.shared
 
-        // Создать экземпляр WebSocketService и установить соединение
-        let webSocketService = WebSocketService.shared
+        
 
         // Создать представление ContentView и установить AppState в качестве входного параметра
         let contentView = ContentView().environmentObject(appState)
@@ -34,7 +34,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func sceneWillResignActive(_ scene: UIScene) {
         // Отключить WebSocket при переходе приложения в неактивное состояние
-        WebSocketService.shared.disconnect()
+        webSocketService.disconnect()
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
@@ -43,12 +43,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func sceneWillEnterForeground(_ scene: UIScene) {
         // Восстановить соединение с WebSocket, когда приложение возвращается на передний план
-        WebSocketService.shared.connect()
+        webSocketService.connect{_ in}
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
         // Восстановить соединение с WebSocket, когда приложение становится активным
-        WebSocketService.shared.connect()
+        webSocketService.connect{_ in}
     }
 
     // ...ограничений связанных с использованием окон браузера и ошибок
