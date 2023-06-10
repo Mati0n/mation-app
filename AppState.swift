@@ -22,6 +22,7 @@ class AppState: ObservableObject {
     }
     
     func updateZones() {
+        print("appState.updateZones()")
         webSocketService.sendDataToServer(eventName: "getZones")
     }
 }

@@ -9,11 +9,9 @@ import Foundation
 import SwiftUI
 
 struct LoadingScreen: View {
-    @EnvironmentObject var webSocketService: WebSocketService
+    @ObservedObject private var webSocketService = WebSocketService.shared
     @State private var isLoading = true
-    @State private var isLoggedIn = false
 
-    
     var body: some View {
         VStack {
             if isLoading {
@@ -23,7 +21,7 @@ struct LoadingScreen: View {
                 // Переход к ZoneScreen или другому экрану при успешной авторизации
                 NavigationLink(
                     destination: ZonesScreen(),
-                    isActive: $isLoggedIn,
+                    isActive: .constant(!isLoading),
                     label: { EmptyView() }
                 )
             }
@@ -36,9 +34,7 @@ struct LoadingScreen: View {
                         switch authResult {
                         case .success:
                             // Получение состояния системы и доп. команд здесь
-                            webSocketService.sendDataToServer(eventName: "getZones", data: [:])
-                            
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                            DispatchQueue.main.async {
                                 isLoading = false
                             }
                         case .failure(let error):

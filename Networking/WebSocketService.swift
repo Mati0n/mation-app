@@ -34,12 +34,11 @@ class WebSocketService: ObservableObject {
             
         }
         
-        socket.on("registration") { [weak self] data, ack in
-            print("Registered with server")
-            self?.isRegistered = true
-            //self?.sendDataToServer(eventName: "/api/v1/zones", data: [:])
-            self?.socket.emit("getZones", [] as [Any])
-        }
+//        socket.on("registration") { [weak self] data, ack in
+//            print("Registered with server")
+//            self?.isRegistered = true
+//            self?.sendDataToServer(eventName: "getZones")
+//        }
         
         socket.on("updateUI") { [weak self] data, ack in
             print("Received UI update!")
@@ -59,11 +58,25 @@ class WebSocketService: ObservableObject {
                 }
         }
         
+        socket.on("getZones") { [weak self] data, ack in
+            print("Received list of zones")
+            self?.hasLoadedZones = true
+            // Process the list of zones here
+            if let zonesData = data[0] as? Data {
+                do {
+                    let zones = try JSONDecoder().decode([Zone].self, from: zonesData)
+                    AppState.shared.zones = zones
+                } catch {
+                    print("Error decoding zones: \(error)")
+                }
+            }
+        }
+        
         connect{_ in}
     }
 
     func sendDataToServer(eventName: String, data: [String: Any] = [:]) {
-        print("sendDataToServer: \(data)")
+        print("sendDataToServer: \(eventName): \(data)")
         socket.emit(eventName, [data])
     }
 

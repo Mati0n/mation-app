@@ -12,7 +12,7 @@ import SwiftUI
 struct MationApp: App {
     var body: some Scene {
         WindowGroup {
-            ZonesScreen()
+            ContentView()
         }
     }
 }

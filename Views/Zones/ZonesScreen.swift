@@ -15,7 +15,7 @@ struct ZonesScreen: View {
     
     var body: some View {
         NavigationView {
-            List(zones, id: \.id) { zone in
+            List(appState.zones, id: \.id) { zone in
                 ZoneCell(zone: zone)
             }
             .onAppear(perform: loadZones)
@@ -27,23 +27,7 @@ struct ZonesScreen: View {
     }
 
     func loadZones() {
-//        appState.updateZones() { result in
-//            switch result {
-//            case .success(let zones):
-//                self.updateZones(zones: zones)
-//            case .failure(let error):
-//                // обработайте ошибку здесь, например, отобразите сообщение об ошибке
-//                print("Error: \(error.localizedDescription)")
-//                self.showAlert = true
-//            }
-//        }
-    }
-}
-
-extension ZonesScreen {
-    func updateZones(zones: [Zone]) {
-        DispatchQueue.main.async {
-            appState.zones = zones
-        }
+        print("ZonesScreen loadZones!!!")
+        appState.updateZones()
     }
 }
