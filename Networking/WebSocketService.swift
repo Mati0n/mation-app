@@ -21,6 +21,7 @@ class WebSocketService: ObservableObject {
 
     @Published var isConnected = false
     @Published var isRegistered = false
+    @Published var hasLoadedZones = false
     
     private init() {
         let connectParams: [String: Any] = ["uuid": uuid]
@@ -33,9 +34,15 @@ class WebSocketService: ObservableObject {
             
         }
         
-        socket.on("/auth/register") { [weak self] data, ack in
-            print("Registered with server")
-            self?.isRegistered = true
+//        socket.on("/auth/register") { [weak self] data, ack in
+//            print("Registered with server")
+//            self?.isRegistered = true
+//        }
+        
+        socket.on("get_zones") { [weak self] data, ack in
+            print("Received list of zones")
+            self?.hasLoadedZones = true
+            // Process the list of zones here
         }
         
         // Обработка любых событий, которые ваш сервер будет отправлять
@@ -48,7 +55,8 @@ class WebSocketService: ObservableObject {
 //            }
         }
 
-        socket.connect()
+        //socket.connect()
+        connect{_ in}
     }
 
     func sendDataToServer(eventName: String, data: [String: Any]) {
@@ -115,6 +123,7 @@ class WebSocketService: ObservableObject {
         socket.on("/auth/register") { (data, _) in
             // Вызовите completion(.success(())), если сервер сообщает об успешной авторизации
             completion(.success(()))
+            self.isRegistered = true
         }
         
         // Замените "authentication_error" на соответствующее событие сервера
