@@ -29,17 +29,7 @@ struct SourcesScreen: View {
     }
 
     func loadSources() {
-        self.updateSources(sources: sources)
-//        APIClient.getSources { result in
-//            switch result {
-//            case .success(let sources):
-//                self.updateSources(sources: sources)
-//            case .failure(let error):
-//                // обработайте ошибку здесь, например, отобразите сообщение об ошибке
-//                print("Error: \(error.localizedDescription)")
-//                self.showAlert = true
-//            }
-//        }
+
     }
 }
 

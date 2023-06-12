@@ -17,6 +17,10 @@ struct ZonesScreen: View {
         NavigationView {
             List(appState.zones, id: \.id) { zone in
                 ZoneCell(zone: zone)
+                .onTapGesture {
+                    appState.currentZoneId = zone.id
+                    WebSocketService.shared.sendDataToServer(eventName: "selectZone", data: ["id": zone.id])
+                }
             }
             .onAppear(perform: loadZones)
             .navigationTitle("Zones")
@@ -27,7 +31,6 @@ struct ZonesScreen: View {
     }
 
     func loadZones() {
-        print("ZonesScreen loadZones!!!")
         appState.updateZones()
     }
 }

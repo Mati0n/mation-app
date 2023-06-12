@@ -44,40 +44,48 @@ class WebSocketService: ObservableObject {
             print("Received UI update!")
             
             // Process the list of zones here
-                if let jsonString = data.first as? String,
-                   let jsonData = jsonString.data(using: .utf8) {
-                    do {
-                        let decoder = JSONDecoder()
-                        let zones = try decoder.decode([Zone].self, from: jsonData)
-                        // передать zones в интерфейс
-                        self?.hasLoadedZones = true
-                        AppState.shared.zones = zones
-                    } catch {
-                        print("Ошибка декодирования: \(error.localizedDescription)")
-                    }
+            if let jsonString = data.first as? String,
+               let jsonData = jsonString.data(using: .utf8) {
+                do {
+                    let decoder = JSONDecoder()
+                    let zoneResponse = try decoder.decode(ZoneResponse.self, from: jsonData)
+                    AppState.shared.zones = zoneResponse.zones
+                    self?.hasLoadedZones = true
+                } catch {
+                    print("Ошибка декодирования: \(error.localizedDescription)")
                 }
+            }
         }
         
         socket.on("getZones") { [weak self] data, ack in
             print("Received list of zones")
             self?.hasLoadedZones = true
-            // Process the list of zones here
-            if let zonesData = data[0] as? Data {
-                do {
-                    let zones = try JSONDecoder().decode([Zone].self, from: zonesData)
-                    AppState.shared.zones = zones
-                } catch {
-                    print("Error decoding zones: \(error)")
-                }
+            if let zonesJSONArray = (data[0] as? NSDictionary)?["zones"] as? NSArray,
+               let zonesJSONData = try? JSONSerialization.data(withJSONObject: zonesJSONArray, options: []),
+               let zones = try? JSONDecoder().decode([Zone].self, from: zonesJSONData) {
+                AppState.shared.zones = zones
+            } else {
+                print("Ошибка декодирования")
             }
         }
         
+        socket.on("getSources") { [weak self] data, ack in
+            print("Received list of source in current zones \(String(describing: AppState.shared.currentZoneId))")
+            //self?.hasLoadedZones = true
+            if let sourcesJSONArray = (data[0] as? NSDictionary)?["sources"] as? NSArray,
+               let sourcesJSONArray = try? JSONSerialization.data(withJSONObject: sourcesJSONArray, options: []),
+               let sources = try? JSONDecoder().decode([Source].self, from: sourcesJSONArray) {
+                AppState.shared.sources = sources
+            } else {
+                print("Ошибка декодирования")
+            }
+        }
         connect{_ in}
     }
 
     func sendDataToServer(eventName: String, data: [String: Any] = [:]) {
         print("sendDataToServer: \(eventName): \(data)")
-        socket.emit(eventName, [data])
+        socket.emit(eventName, data)
     }
 
     func disconnect() {

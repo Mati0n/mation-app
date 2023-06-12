@@ -7,6 +7,8 @@
 
 import Foundation
 import SwiftUI
+import Combine
+import UIKit
 
 class AppState: ObservableObject {
     static let shared = AppState()
@@ -14,30 +16,22 @@ class AppState: ObservableObject {
     @Published var currentSourceId: String?
     @Published var zones: [Zone] = []
     @Published var sources: [Source] = []
-    
+    private(set) lazy var hwid: String = getHWID()
     private var webSocketService: WebSocketService
-
+    private var cancellables = Set<AnyCancellable>()
+    
     private init() {
         webSocketService = WebSocketService.shared
     }
     
+    private func getHWID() -> String {
+        if let id = UIDevice.current.identifierForVendor {
+            return id.uuidString
+        }
+        return "Failed to get hwid"
+    }
+    
     func updateZones() {
-        print("appState.updateZones()")
         webSocketService.sendDataToServer(eventName: "getZones")
     }
 }
-/**
- Когда вы создадите экран с сохранением выбранной зоны и источника, вы можете использовать менять `currentZoneId` и `currentSourceId` следующим образом:
-
- ```swift
- AppState.shared.currentZoneId = selectedZoneId
- AppState.shared.currentSourceId = selectedSourceId
- ```
-
- Для того чтобы получить доступ к значениям currentZoneId и currentSourceId используйте:
-
- ```swift
- let currentZoneId = AppState.shared.currentZoneId
- let currentSourceId = AppState.shared.currentSourceId
- ```
- */

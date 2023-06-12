@@ -13,7 +13,7 @@ struct ZoneCell: View {
 
     var body: some View {
         HStack {
-            Image(zone.image)
+            Image(zone.image ?? "icon")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 50, height: 50)
