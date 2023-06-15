@@ -1,5 +1,5 @@
 //
-//  URLSessionWebSocketTask.swift
+//  WebSocketService.swift
 //  mation-ios-app
 //
 //  Created by Dmitry Ryzhkov on 10.06.2023.
@@ -8,79 +8,55 @@
 import Foundation
 import SocketIO
 import Combine
+import UIKit
 
 class WebSocketService: ObservableObject {
-    static let shared = WebSocketService()
 
+    static let shared = WebSocketService(uuid: getHWID())
     private let manager: SocketManager
     private let socket: SocketIOClient
-    private let uuid = UUID().uuidString
+    private let uuid: String
     
     private var retryCount = 0
     private let maxRetryAttempts = 3
 
     @Published var isConnected = false
     @Published var isRegistered = false
-    @Published var hasLoadedZones = false
     
-    private init() {
+    let eventHandlers: [String: ([Any]) -> Void] = [
+        "getSystemConfig": handleSystemConfig,
+        "getZones": handleZones,
+        "getSources": handleSources
+    ]
+
+    init(uuid: String) {
+        self.uuid = uuid
         let connectParams: [String: Any] = ["uuid": uuid]
         manager = SocketManager(socketURL: URL(string: "http://localhost:53301")!, config: [.log(false), .compress, .connectParams(connectParams)])
         socket = manager.defaultSocket
 
+        // Instance setup
+        socket.onAny { event in
+            print("Received event: \(event.event), with items: \(event.items ?? [])")
+            if let handler = self.eventHandlers[event.event] {
+                handler(event.items ?? [])
+            }
+        }
+        
         socket.on(clientEvent: .connect) { (_, _) in
-            print("Connected to websocket server")
+            print("Connected to MATION server!")
             self.isConnected = true
-            
         }
         
-//        socket.on("registration") { [weak self] data, ack in
-//            print("Registered with server")
-//            self?.isRegistered = true
-//            self?.sendDataToServer(eventName: "getZones")
-//        }
-        
-        socket.on("updateUI") { [weak self] data, ack in
-            print("Received UI update!")
-            
-            // Process the list of zones here
-            if let jsonString = data.first as? String,
-               let jsonData = jsonString.data(using: .utf8) {
-                do {
-                    let decoder = JSONDecoder()
-                    let zoneResponse = try decoder.decode(ZoneResponse.self, from: jsonData)
-                    AppState.shared.zones = zoneResponse.zones
-                    self?.hasLoadedZones = true
-                } catch {
-                    print("Ошибка декодирования: \(error.localizedDescription)")
-                }
-            }
-        }
-        
-        socket.on("getZones") { [weak self] data, ack in
-            print("Received list of zones")
-            self?.hasLoadedZones = true
-            if let zonesJSONArray = (data[0] as? NSDictionary)?["zones"] as? NSArray,
-               let zonesJSONData = try? JSONSerialization.data(withJSONObject: zonesJSONArray, options: []),
-               let zones = try? JSONDecoder().decode([Zone].self, from: zonesJSONData) {
-                AppState.shared.zones = zones
-            } else {
-                print("Ошибка декодирования")
-            }
-        }
-        
-        socket.on("getSources") { [weak self] data, ack in
-            print("Received list of source in current zones \(String(describing: AppState.shared.currentZoneId))")
-            //self?.hasLoadedZones = true
-            if let sourcesJSONArray = (data[0] as? NSDictionary)?["sources"] as? NSArray,
-               let sourcesJSONArray = try? JSONSerialization.data(withJSONObject: sourcesJSONArray, options: []),
-               let sources = try? JSONDecoder().decode([Source].self, from: sourcesJSONArray) {
-                AppState.shared.sources = sources
-            } else {
-                print("Ошибка декодирования")
-            }
-        }
         connect{_ in}
+    }
+    
+    private static func getHWID() -> String {
+        if let id = UIDevice.current.identifierForVendor {
+            print("getHWID: \(id.uuidString)")
+            return id.uuidString
+        }
+        return "Failed to get hwid"
     }
 
     func sendDataToServer(eventName: String, data: [String: Any] = [:]) {
@@ -117,6 +93,7 @@ class WebSocketService: ObservableObject {
         socket.on("registration") { (data, _) in
             completion(.success(()))
             self.isRegistered = true
+            AppState.shared.requestSystemConfig()
         }
         
         socket.on("registration_error") { (data, _) in

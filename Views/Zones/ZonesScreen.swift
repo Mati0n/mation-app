@@ -15,14 +15,14 @@ struct ZonesScreen: View {
     
     var body: some View {
         NavigationView {
-            List(appState.zones, id: \.id) { zone in
+            List(appState.system?.zones ?? [], id: \.id) { zone in
                 ZoneCell(zone: zone)
                 .onTapGesture {
                     appState.currentZoneId = zone.id
                     WebSocketService.shared.sendDataToServer(eventName: "selectZone", data: ["id": zone.id])
                 }
             }
-            .onAppear(perform: loadZones)
+            //.onAppear(perform: loadZones)
             .navigationTitle("Zones")
             .alert(isPresented: $showAlert) {
                 Alert(title: Text("Error"), message: Text("Failed to load zones data."), dismissButton: .default(Text("OK")))

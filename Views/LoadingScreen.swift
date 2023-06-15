@@ -9,7 +9,6 @@ import Foundation
 import SwiftUI
 
 struct LoadingScreen: View {
-    @ObservedObject private var webSocketService = WebSocketService.shared
     @State private var isLoading = true
 
     var body: some View {
@@ -18,7 +17,6 @@ struct LoadingScreen: View {
                 ProgressView()
                     .scaleEffect(2)
             } else {
-                // Переход к ZoneScreen или другому экрану при успешной авторизации
                 NavigationLink(
                     destination: ZonesScreen(),
                     isActive: .constant(!isLoading),
@@ -27,13 +25,14 @@ struct LoadingScreen: View {
             }
         }
         .onAppear {
+            let webSocketService = AppState.shared.webSocketService
+                    
             webSocketService.connect { result in
                 switch result {
                 case .success:
                     webSocketService.authenticate { authResult in
                         switch authResult {
                         case .success:
-                            // Получение состояния системы и доп. команд здесь
                             DispatchQueue.main.async {
                                 isLoading = false
                             }
