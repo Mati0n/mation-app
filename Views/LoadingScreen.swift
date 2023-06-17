@@ -10,30 +10,32 @@ import SwiftUI
 
 struct LoadingScreen: View {
     @State private var isLoading = true
+    var onComplete: () -> Void
 
     var body: some View {
         VStack {
             if isLoading {
                 ProgressView()
-                    .scaleEffect(2)
+                .scaleEffect(2)
             } else {
-                NavigationLink(
-                    destination: ZonesScreen(),
-                    isActive: .constant(!isLoading),
-                    label: { EmptyView() }
-                )
+                EmptyView()
+                //.onAppear(perform: onComplete) // переместим вызов onComplete сюда
             }
         }
         .onAppear {
             let webSocketService = AppState.shared.webSocketService
-                    
+            
+            if !isLoading {
+                onComplete()
+            }
+            
             webSocketService.connect { result in
                 switch result {
                 case .success:
                     webSocketService.authenticate { authResult in
                         switch authResult {
                         case .success:
-                            DispatchQueue.main.async {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                                 isLoading = false
                             }
                         case .failure(let error):
@@ -45,11 +47,5 @@ struct LoadingScreen: View {
                 }
             }
         }
-    }
-}
-
-struct LoadingScreen_Previews: PreviewProvider {
-    static var previews: some View {
-        LoadingScreen()
     }
 }

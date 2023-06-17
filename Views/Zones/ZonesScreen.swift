@@ -10,27 +10,30 @@ import SwiftUI
 
 struct ZonesScreen: View {
     @ObservedObject var appState = AppState.shared
-    @State private var zones: [Zone] = []
-    @State private var showAlert = false
     
     var body: some View {
         NavigationView {
             List(appState.system?.zones ?? [], id: \.id) { zone in
-                ZoneCell(zone: zone)
-                .onTapGesture {
+                Button(action: {
+                    print("Select currentZoneId: \(zone.id)")
                     appState.currentZoneId = zone.id
-                    WebSocketService.shared.sendDataToServer(eventName: "selectZone", data: ["id": zone.id])
+                    appState.navigateTo(destination: AnyView(SourcesScreen()))
+                }) {
+                    ZoneCell(zone: zone)
                 }
             }
-            //.onAppear(perform: loadZones)
             .navigationTitle("Zones")
-            .alert(isPresented: $showAlert) {
-                Alert(title: Text("Error"), message: Text("Failed to load zones data."), dismissButton: .default(Text("OK")))
+            .background(
+                NavigationLink(destination: appState.destination, isActive: $appState.shouldNavigate) {
+                    EmptyView()
+                }
+            )
+            
+            if let volumeBar = appState.currentVolumeBar {
+                VolumeBarView(volumeBar: volumeBar)
             }
         }
     }
-
-    func loadZones() {
-        appState.updateZones()
-    }
 }
+
+

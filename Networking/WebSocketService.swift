@@ -37,9 +37,12 @@ class WebSocketService: ObservableObject {
 
         // Instance setup
         socket.onAny { event in
-            print("Received event: \(event.event), with items: \(event.items ?? [])")
+            //print("Received event: \(event.event), with items: \(event.items ?? [])")
             if let handler = self.eventHandlers[event.event] {
+                print("Received event: \(event.event)")
                 handler(event.items ?? [])
+            } else {
+                print("No event in handlers: \(event.event)")
             }
         }
         

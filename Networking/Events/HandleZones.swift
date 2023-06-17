@@ -14,7 +14,13 @@ func handleZones(data: [Any]) {
        let JSONData = try? JSONSerialization.data(withJSONObject: JSONArray, options: []) {
         do {
             let zones = try JSONDecoder().decode([Zone].self, from: JSONData)
-            AppState.shared.zones = zones
+            //AppState.shared.zones = zones
+            
+            // Если текущий выбранный параметр zoneId не пуст, показать volumeBar для этой зоны:
+            if let currentZoneId = AppState.shared.currentZoneId,
+                let currentZone = zones.first(where: { $0.id == currentZoneId }) {
+                AppState.shared.currentVolumeBar = currentZone.volumeBar
+            }
         } catch {
             print("Zone Decoding error: \(error)")
         }

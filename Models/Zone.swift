@@ -19,7 +19,7 @@ struct Zone: Codable, Identifiable {
     let image: String?
     let isEnabled: Bool?
     let isActive: Bool?
-    let sources: [Source]?
+    let sources: [String]?
     let volumeBar: VolumeBar?
     let floor: String?
     let space: String?

@@ -14,7 +14,7 @@ func handleSources(data: [Any]) {
        let JSONData = try? JSONSerialization.data(withJSONObject: JSONArray, options: []) {
         do {
             let sources = try JSONDecoder().decode([Source].self, from: JSONData)
-            AppState.shared.sources = sources
+            //AppState.shared.sources = sources
         } catch {
             print("Source Decoding error: \(error)")
         }
